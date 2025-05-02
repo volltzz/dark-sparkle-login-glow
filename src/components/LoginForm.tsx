@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -14,6 +15,7 @@ const LoginForm: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,6 +39,9 @@ const LoginForm: React.FC = () => {
         description: "Logged in successfully",
       });
       console.log('Login with:', { email, password, rememberMe });
+      
+      // Redirect to dashboard after successful login
+      navigate('/home');
     } catch (error) {
       toast({
         title: "Error",
