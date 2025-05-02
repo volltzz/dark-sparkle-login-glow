@@ -2,7 +2,8 @@
 import React, { useState } from 'react';
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Search } from "lucide-react";
+import { Search, UserPlus, Filter, Download } from "lucide-react";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { 
   Table, 
   TableBody, 
@@ -21,6 +22,8 @@ import {
   PaginationPrevious
 } from "@/components/ui/pagination";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 // Sample users data - in a real app this would come from an API
 const usersData = [
@@ -42,6 +45,7 @@ const Users: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
+  const isMobile = useIsMobile();
 
   // Filter users based on search term
   const filteredUsers = usersData.filter(user => 
@@ -62,14 +66,19 @@ const Users: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-gradient mb-1">Users</h1>
-        <p className="text-muted-foreground">Manage your users and their access permissions.</p>
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+        <div>
+          <h1 className="text-3xl font-bold text-gradient mb-1">Users</h1>
+          <p className="text-muted-foreground">Manage your users and their access permissions.</p>
+        </div>
+        <Button className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 transition-all">
+          <UserPlus size={18} className="mr-2" />
+          Add User
+        </Button>
       </div>
       
       <Card className="glass-morphism border-white/10 p-5">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-          <h2 className="text-xl font-semibold">All Users</h2>
           <div className="relative w-full md:w-64">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
@@ -79,57 +88,90 @@ const Users: React.FC = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
+          <div className="flex gap-2">
+            <Button variant="outline" size="icon" className="hover:bg-accent/50">
+              <Filter size={18} />
+            </Button>
+            <Button variant="outline" size="icon" className="hover:bg-accent/50">
+              <Download size={18} />
+            </Button>
+          </div>
         </div>
         
-        <div className="rounded-md border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead className="hidden md:table-cell">Email</TableHead>
-                <TableHead>Role</TableHead>
-                <TableHead className="hidden md:table-cell">Status</TableHead>
-                <TableHead className="hidden lg:table-cell">Last Active</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {currentUsers.length > 0 ? (
-                currentUsers.map((user) => (
-                  <TableRow key={user.id}>
-                    <TableCell className="font-medium">{user.name}</TableCell>
-                    <TableCell className="hidden md:table-cell">{user.email}</TableCell>
-                    <TableCell>{user.role}</TableCell>
-                    <TableCell className="hidden md:table-cell">
-                      <Badge variant={
-                        user.status === 'Active' ? 'default' :
-                        user.status === 'Inactive' ? 'secondary' :
-                        'destructive'
-                      }>
-                        {user.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="hidden lg:table-cell">{user.lastActive}</TableCell>
+        <div className="rounded-md border overflow-hidden">
+          <ScrollArea className="w-full">
+            <div className={isMobile ? "min-w-[600px]" : ""}>
+              <Table>
+                <TableHeader className="bg-black/30">
+                  <TableRow>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead>Role</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Last Active</TableHead>
                   </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={5} className="text-center py-6 text-muted-foreground">
-                    No users found matching your search.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
+                </TableHeader>
+                <TableBody>
+                  {currentUsers.length > 0 ? (
+                    currentUsers.map((user) => (
+                      <TableRow key={user.id} className="hover:bg-white/5">
+                        <TableCell className="font-medium">{user.name}</TableCell>
+                        <TableCell>{user.email}</TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className={
+                            user.role === 'Admin' ? 'bg-purple-500/20 text-purple-300 border-purple-500/30' :
+                            user.role === 'Manager' ? 'bg-blue-500/20 text-blue-300 border-blue-500/30' :
+                            'bg-gray-500/20 text-gray-300 border-gray-500/30'
+                          }>
+                            {user.role}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant={
+                            user.status === 'Active' ? 'default' :
+                            user.status === 'Inactive' ? 'secondary' :
+                            'destructive'
+                          } className={
+                            user.status === 'Active' ? 'bg-green-500/20 text-green-300 hover:bg-green-500/30' :
+                            user.status === 'Inactive' ? 'bg-yellow-500/20 text-yellow-300 hover:bg-yellow-500/30' :
+                            'bg-red-500/20 text-red-300 hover:bg-red-500/30'
+                          }>
+                            {user.status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>{user.lastActive}</TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={5} className="text-center py-6 text-muted-foreground">
+                        No users found matching your search.
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          </ScrollArea>
         </div>
         
         {filteredUsers.length > 0 && (
-          <div className="mt-4">
+          <div className="mt-6">
+            <div className="flex items-center justify-between text-sm text-muted-foreground mb-4">
+              <div>
+                Showing <span className="font-medium text-foreground">{indexOfFirstUser + 1}</span> to{" "}
+                <span className="font-medium text-foreground">
+                  {Math.min(indexOfLastUser, filteredUsers.length)}
+                </span>{" "}
+                of <span className="font-medium text-foreground">{filteredUsers.length}</span> users
+              </div>
+            </div>
             <Pagination>
               <PaginationContent>
                 <PaginationItem>
                   <PaginationPrevious 
                     onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
-                    className="cursor-pointer"
+                    className={`cursor-pointer ${currentPage === 1 ? 'opacity-50 pointer-events-none' : ''}`}
                     aria-disabled={currentPage === 1}
                   />
                 </PaginationItem>
@@ -181,7 +223,7 @@ const Users: React.FC = () => {
                 <PaginationItem>
                   <PaginationNext 
                     onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
-                    className="cursor-pointer"
+                    className={`cursor-pointer ${currentPage === totalPages ? 'opacity-50 pointer-events-none' : ''}`}
                     aria-disabled={currentPage === totalPages}
                   />
                 </PaginationItem>
