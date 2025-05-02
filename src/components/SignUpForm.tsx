@@ -1,18 +1,21 @@
 
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Eye, EyeOff, Lock, User } from 'lucide-react';
+import { Eye, EyeOff, Lock, User, Mail } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
-const LoginForm: React.FC = () => {
+const SignUpForm: React.FC = () => {
+  const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [rememberMe, setRememberMe] = useState(false);
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [agreeTerms, setAgreeTerms] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -20,10 +23,28 @@ const LoginForm: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!email || !password) {
+    if (!fullName || !email || !password || !confirmPassword) {
       toast({
         title: "Error",
         description: "Please fill in all fields",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      toast({
+        title: "Error",
+        description: "Passwords do not match",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (!agreeTerms) {
+      toast({
+        title: "Error",
+        description: "Please agree to the terms and conditions",
         variant: "destructive"
       });
       return;
@@ -36,16 +57,16 @@ const LoginForm: React.FC = () => {
       
       toast({
         title: "Success",
-        description: "Logged in successfully",
+        description: "Account created successfully",
       });
-      console.log('Login with:', { email, password, rememberMe });
+      console.log('Sign up with:', { fullName, email, password, agreeTerms });
       
-      // Redirect to dashboard after successful login
-      navigate('/home');
+      // Redirect to login after successful sign up
+      navigate('/');
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to log in. Please try again.",
+        description: "Failed to create account. Please try again.",
         variant: "destructive"
       });
       console.error(error);
@@ -56,14 +77,35 @@ const LoginForm: React.FC = () => {
 
   return (
     <div className="w-full max-w-md">
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-5">
+        <div className="space-y-2">
+          <Label htmlFor="fullName" className="text-sm font-medium text-gray-200">
+            Full Name
+          </Label>
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-muted-foreground">
+              <User size={18} />
+            </div>
+            <Input
+              id="fullName"
+              type="text"
+              placeholder="John Doe"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              className="pl-10 bg-secondary/50 border-secondary focus:border-primary focus:ring-primary glass-morphism"
+              disabled={isLoading}
+              required
+            />
+          </div>
+        </div>
+
         <div className="space-y-2">
           <Label htmlFor="email" className="text-sm font-medium text-gray-200">
             Email Address
           </Label>
           <div className="relative">
             <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-muted-foreground">
-              <User size={18} />
+              <Mail size={18} />
             </div>
             <Input
               id="email"
@@ -79,14 +121,9 @@ const LoginForm: React.FC = () => {
         </div>
 
         <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <Label htmlFor="password" className="text-sm font-medium text-gray-200">
-              Password
-            </Label>
-            <a href="#" className="text-xs text-purple-400 hover:text-purple-300 transition-colors">
-              Forgot password?
-            </a>
-          </div>
+          <Label htmlFor="password" className="text-sm font-medium text-gray-200">
+            Password
+          </Label>
           <div className="relative">
             <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-muted-foreground">
               <Lock size={18} />
@@ -111,19 +148,47 @@ const LoginForm: React.FC = () => {
           </div>
         </div>
 
+        <div className="space-y-2">
+          <Label htmlFor="confirmPassword" className="text-sm font-medium text-gray-200">
+            Confirm Password
+          </Label>
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-muted-foreground">
+              <Lock size={18} />
+            </div>
+            <Input
+              id="confirmPassword"
+              type={showConfirmPassword ? 'text' : 'password'}
+              placeholder="••••••••"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              className="pl-10 pr-10 bg-secondary/50 border-secondary focus:border-primary focus:ring-primary glass-morphism"
+              disabled={isLoading}
+              required
+            />
+            <button 
+              type="button"
+              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+              className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-300"
+            >
+              {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
+          </div>
+        </div>
+
         <div className="flex items-center space-x-2">
           <Checkbox 
-            id="remember-me" 
-            checked={rememberMe} 
-            onCheckedChange={(checked) => setRememberMe(!!checked)} 
+            id="agree-terms" 
+            checked={agreeTerms} 
+            onCheckedChange={(checked) => setAgreeTerms(!!checked)} 
             className="data-[state=checked]:bg-purple-600 data-[state=checked]:border-purple-600"
             disabled={isLoading}
           />
           <label 
-            htmlFor="remember-me" 
+            htmlFor="agree-terms" 
             className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-gray-300"
           >
-            Remember me for 30 days
+            I agree to the <a href="#" className="text-purple-400 hover:text-purple-300 hover:underline">Terms of Service</a> and <a href="#" className="text-purple-400 hover:text-purple-300 hover:underline">Privacy Policy</a>
           </label>
         </div>
 
@@ -135,9 +200,9 @@ const LoginForm: React.FC = () => {
           {isLoading ? (
             <div className="flex items-center justify-center">
               <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-              <span>Logging in...</span>
+              <span>Creating Account...</span>
             </div>
-          ) : "Sign in"}
+          ) : "Sign Up"}
         </Button>
       </form>
 
@@ -188,13 +253,13 @@ const LoginForm: React.FC = () => {
       </div>
 
       <p className="mt-6 text-center text-xs text-gray-400">
-        Don't have an account?{" "}
-        <Link to="/signup" className="font-medium text-purple-400 hover:text-purple-300 hover:underline transition-all">
-          Sign up
-        </Link>
+        Already have an account?{" "}
+        <a href="/" className="font-medium text-purple-400 hover:text-purple-300 hover:underline transition-all">
+          Sign in
+        </a>
       </p>
     </div>
   );
 };
 
-export default LoginForm;
+export default SignUpForm;
