@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, Home, Users, BarChart, Settings, Package } from 'lucide-react';
@@ -37,13 +36,14 @@ const Sidebar = () => {
 
   const navItems = [
     { icon: Home, label: 'Dashboard', path: '/home' },
-    { icon: Users, label: 'Users', path: '/users' },
+    { icon: Users, label: 'Users', path: '/home/users' },
     { icon: BarChart, label: 'Analytics', path: '/analytics' },
     { icon: Package, label: 'Products', path: '/products' },
     { icon: Settings, label: 'Settings', path: '/settings' },
   ];
 
   return (
+    
     <div 
       className={cn(
         "h-screen flex flex-col bg-sidebar glass-morphism border-r border-white/10 transition-all duration-300 ease-in-out overflow-hidden",
@@ -97,7 +97,7 @@ const Sidebar = () => {
             label={item.label}
             path={item.path}
             isCollapsed={isCollapsed}
-            isActive={location.pathname === item.path}
+            isActive={location.pathname === item.path || (item.path === '/home/users' && location.pathname.includes('users'))}
           />
         ))}
       </div>
