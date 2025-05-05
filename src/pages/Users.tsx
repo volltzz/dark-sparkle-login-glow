@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Search, UserPlus, Filter, Download } from "lucide-react";
+import { Search, UserPlus, Filter, Download, Check, X } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { 
   Table, 
@@ -34,7 +34,6 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { Select } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 
 // Sample users data - in a real app this would come from an API
@@ -53,12 +52,37 @@ const usersData = [
   { id: '12', name: 'Jennifer Lewis', email: 'jennifer@example.com', role: 'User', status: 'Suspended', lastActive: '2025-04-26' },
 ];
 
+// Define a type for our user data
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  status: string;
+  lastActive: string;
+}
+
+// Interface for editing state
+interface EditingState {
+  id: string | null;
+  field: 'name' | 'email' | null;
+  value: string;
+}
+
 const Users: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+  const [users, setUsers] = useState<User[]>(usersData);
   const itemsPerPage = 5;
   const isMobile = useIsMobile();
   const { toast } = useToast();
+  
+  // State for inline editing
+  const [editing, setEditing] = useState<EditingState>({
+    id: null,
+    field: null,
+    value: ''
+  });
   
   // New user form state
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -103,8 +127,64 @@ const Users: React.FC = () => {
     });
   };
 
+  // Handle starting to edit a field
+  const startEdit = (user: User, field: 'name' | 'email') => {
+    setEditing({
+      id: user.id,
+      field: field,
+      value: user[field]
+    });
+  };
+
+  // Handle input change during inline editing
+  const handleEditChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEditing(prev => ({
+      ...prev,
+      value: e.target.value
+    }));
+  };
+
+  // Save the edited value
+  const saveEdit = () => {
+    if (editing.id && editing.field) {
+      const updatedUsers = users.map(user => {
+        if (user.id === editing.id) {
+          return {
+            ...user,
+            [editing.field as string]: editing.value
+          };
+        }
+        return user;
+      });
+      
+      setUsers(updatedUsers);
+      
+      // Show success toast
+      toast({
+        title: "Update successful",
+        description: `User ${editing.field} has been updated.`,
+      });
+      
+      // Reset editing state
+      setEditing({
+        id: null,
+        field: null,
+        value: ''
+      });
+    }
+  };
+
+  // Cancel editing
+  const cancelEdit = () => {
+    setEditing({
+      id: null,
+      field: null,
+      value: ''
+    });
+  };
+
   // Filter users based on search term
-  const filteredUsers = usersData.filter(user => 
+  const filteredUsers = users.filter(user => 
     user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
     user.role.toLowerCase().includes(searchTerm.toLowerCase())
@@ -118,6 +198,51 @@ const Users: React.FC = () => {
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
+  };
+
+  // Render editable cell or input field based on editing state
+  const renderEditableCell = (user: User, field: 'name' | 'email') => {
+    const isEditing = editing.id === user.id && editing.field === field;
+    
+    if (isEditing) {
+      return (
+        <div className="flex items-center gap-2">
+          <Input
+            value={editing.value}
+            onChange={handleEditChange}
+            className="h-8 py-1"
+            autoFocus
+          />
+          <div className="flex gap-1">
+            <Button 
+              size="icon" 
+              variant="ghost" 
+              className="h-6 w-6" 
+              onClick={saveEdit}
+            >
+              <Check className="h-4 w-4 text-green-500" />
+            </Button>
+            <Button 
+              size="icon" 
+              variant="ghost" 
+              className="h-6 w-6" 
+              onClick={cancelEdit}
+            >
+              <X className="h-4 w-4 text-red-500" />
+            </Button>
+          </div>
+        </div>
+      );
+    }
+    
+    return (
+      <div 
+        className="cursor-pointer hover:text-primary transition-colors"
+        onClick={() => startEdit(user, field)}
+      >
+        {user[field]}
+      </div>
+    );
   };
 
   return (
@@ -258,8 +383,12 @@ const Users: React.FC = () => {
                   {currentUsers.length > 0 ? (
                     currentUsers.map((user) => (
                       <TableRow key={user.id} className="hover:bg-white/5">
-                        <TableCell className="font-medium">{user.name}</TableCell>
-                        <TableCell>{user.email}</TableCell>
+                        <TableCell className="font-medium">
+                          {renderEditableCell(user, 'name')}
+                        </TableCell>
+                        <TableCell>
+                          {renderEditableCell(user, 'email')}
+                        </TableCell>
                         <TableCell>
                           <Badge variant="outline" className={
                             user.role === 'Admin' ? 'bg-purple-500/20 text-purple-300 border-purple-500/30' :
