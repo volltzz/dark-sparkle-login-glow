@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, Home, Users, BarChart, Settings, Package } from 'lucide-react';
@@ -43,10 +44,9 @@ const Sidebar = () => {
   ];
 
   return (
-    
     <div 
       className={cn(
-        "h-screen flex flex-col bg-sidebar glass-morphism border-r border-white/10 transition-all duration-300 ease-in-out overflow-hidden",
+        "sticky top-0 h-screen flex flex-col bg-sidebar glass-morphism border-r border-white/10 transition-all duration-300 ease-in-out overflow-hidden",
         isCollapsed ? "w-16" : "w-64"
       )}
     >

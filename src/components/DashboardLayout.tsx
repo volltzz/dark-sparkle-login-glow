@@ -12,7 +12,7 @@ const DashboardLayout: React.FC = () => {
       <Sidebar />
       <div className="flex-1 overflow-auto">
         <div className={cn(
-          "h-full p-6 overflow-y-auto"
+          "min-h-screen p-6 overflow-y-auto"
         )}>
           <Outlet />
         </div>
