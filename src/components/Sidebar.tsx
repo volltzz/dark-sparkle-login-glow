@@ -37,9 +37,9 @@ const Sidebar = () => {
   const navItems = [
     { icon: Home, label: 'Dashboard', path: '/home' },
     { icon: Users, label: 'Users', path: '/home/users' },
-    { icon: BarChart, label: 'Analytics', path: '/analytics' },
-    { icon: Package, label: 'Products', path: '/products' },
-    { icon: Settings, label: 'Settings', path: '/settings' },
+    { icon: BarChart, label: 'Analytics', path: '/home/analytics' },
+    { icon: Package, label: 'Products', path: '/home/products' },
+    { icon: Settings, label: 'Settings', path: '/home/settings' },
   ];
 
   return (
@@ -97,7 +97,7 @@ const Sidebar = () => {
             label={item.label}
             path={item.path}
             isCollapsed={isCollapsed}
-            isActive={location.pathname === item.path || (item.path === '/home/users' && location.pathname.includes('users'))}
+            isActive={location.pathname === item.path || location.pathname.includes(item.path.split('/').pop() as string)}
           />
         ))}
       </div>
