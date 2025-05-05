@@ -24,6 +24,18 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Select } from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
 
 // Sample users data - in a real app this would come from an API
 const usersData = [
@@ -46,6 +58,50 @@ const Users: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
   const isMobile = useIsMobile();
+  const { toast } = useToast();
+  
+  // New user form state
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [newUser, setNewUser] = useState({
+    name: '',
+    email: '',
+    role: 'User',
+    status: 'Active'
+  });
+
+  // Handle form input changes
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setNewUser(prev => ({ ...prev, [name]: value }));
+  };
+
+  // Handle role/status select changes
+  const handleSelectChange = (name: string, value: string) => {
+    setNewUser(prev => ({ ...prev, [name]: value }));
+  };
+
+  // Handle form submission
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // In a real app, you would send this data to your API
+    console.log('New user data:', newUser);
+    
+    // Show success toast
+    toast({
+      title: "User created",
+      description: `${newUser.name} has been added successfully.`,
+    });
+    
+    // Close dialog and reset form
+    setIsDialogOpen(false);
+    setNewUser({
+      name: '',
+      email: '',
+      role: 'User',
+      status: 'Active'
+    });
+  };
 
   // Filter users based on search term
   const filteredUsers = usersData.filter(user => 
@@ -71,10 +127,97 @@ const Users: React.FC = () => {
           <h1 className="text-3xl font-bold text-gradient mb-1">Users</h1>
           <p className="text-muted-foreground">Manage your users and their access permissions.</p>
         </div>
-        <Button className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 transition-all">
-          <UserPlus size={18} className="mr-2" />
-          Add User
-        </Button>
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogTrigger asChild>
+            <Button className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 transition-all">
+              <UserPlus size={18} className="mr-2" />
+              Add User
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-md glass-morphism border-white/10">
+            <DialogHeader>
+              <DialogTitle className="text-gradient">Add New User</DialogTitle>
+              <DialogDescription>
+                Enter the details of the new user below.
+              </DialogDescription>
+            </DialogHeader>
+            <form onSubmit={handleSubmit} className="space-y-4 py-4">
+              <div className="grid gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="name">Full Name</Label>
+                  <Input
+                    id="name"
+                    name="name"
+                    value={newUser.name}
+                    onChange={handleInputChange}
+                    placeholder="John Doe"
+                    required
+                    className="bg-black/20 border-white/10"
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="email">Email Address</Label>
+                  <Input
+                    id="email"
+                    name="email"
+                    type="email"
+                    value={newUser.email}
+                    onChange={handleInputChange}
+                    placeholder="john@example.com"
+                    required
+                    className="bg-black/20 border-white/10"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="role">Role</Label>
+                    <select
+                      id="role"
+                      name="role"
+                      value={newUser.role}
+                      onChange={(e) => handleSelectChange('role', e.target.value)}
+                      className="h-10 rounded-md border border-white/10 bg-black/20 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                    >
+                      <option value="User">User</option>
+                      <option value="Manager">Manager</option>
+                      <option value="Admin">Admin</option>
+                    </select>
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="status">Status</Label>
+                    <select
+                      id="status"
+                      name="status"
+                      value={newUser.status}
+                      onChange={(e) => handleSelectChange('status', e.target.value)}
+                      className="h-10 rounded-md border border-white/10 bg-black/20 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                    >
+                      <option value="Active">Active</option>
+                      <option value="Inactive">Inactive</option>
+                      <option value="Suspended">Suspended</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <DialogFooter className="mt-6">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setIsDialogOpen(false)}
+                  className="border-white/10"
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  type="submit"
+                  className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 transition-all"
+                >
+                  Add User
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
       </div>
       
       <Card className="glass-morphism border-white/10 p-5">
